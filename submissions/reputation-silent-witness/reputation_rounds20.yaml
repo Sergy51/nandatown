@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: Apache-2.0
+# Reputation scenario, with exactly ONE behavioural change from the built-in
+# `reputation` scenario:
+#   task.config.rounds: 5 -> 20
+# Every other knob that affects the run (seed, agent counts and roles, all 12
+# layers, failures, duration, metrics) is identical to
+# `nest scenarios show reputation`. Only `name`, `description` and
+# `output.trace` also differ, so this file can coexist with the original.
+name: reputation_rounds20
+description: "16 honest, 4 malicious traders, 1 observer. Same as `reputation` but 20 trading rounds instead of 5."
+
+tier: 1
+seed: 42
+
+agents:
+  count: 21
+  brain: state-machine
+  roles:
+    - name: honest
+      count: 16
+    - name: malicious
+      count: 4
+    - name: observer
+      count: 1
+
+layers:
+  transport: in_memory
+  comms: nest_native
+  identity: did_key
+  registry: in_memory
+  auth: jwt
+  trust: score_average
+  payments: prepaid_credits
+  coordination: contract_net
+  negotiation: alternating_offers
+  memory: blackboard
+  privacy: noop
+  datafacts: datafacts_v1
+
+task:
+  type: reputation
+  config:
+    rounds: 20            # <-- the one changed setting (built-in default: 5)
+    malicious_fraction: 0.2
+
+failures:
+  message_drop: 0.0
+
+duration: "ticks: 10000"
+
+metrics:
+  - success_rate
+  - message_count
+  - agent_count
+
+output:
+  trace: ./traces/reputation_rounds20.jsonl
